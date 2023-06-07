@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simplewebapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simplewebapp
+  template:
+    metadata:
+      labels:
+        app: simplewebapp
+    spec:
+      containers:
+        - name: simplewebapp
+          image: mustafasayilgan/simplewebapp:$IMAGE_ID
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi            

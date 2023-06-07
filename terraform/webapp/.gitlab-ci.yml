@@ -1,0 +1,27 @@
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t mustafasayilgan/simplewebapp:$CI_COMMIT_SHA .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push mustafasayilgan/simplewebapp:$CI_COMMIT_SHA
+
+deploy:
+  stage: deploy
+  image:
+    name: google/cloud-sdk
+    entrypoint: [""]
+  script:
+    - gcloud auth activate-service-account --key-file=./apt-subset-389115-dd8e3c79aca9.json
+    - gcloud container clusters get-credentials ms-gke-cluster --zone europe-west1-b --project apt-subset-389115
+    - kubectl apply -f deployment.yaml 
+    - kubectl set image deployment/simplewebapp simplewebapp=mustafasayilgan/simplewebapp:$CI_COMMIT_SHA
+    - kubectl apply -f svc.yaml
+    - kubectl apply -f ingress.yaml
+    - kubectl apply -f simplewebapp-hpa.yaml
